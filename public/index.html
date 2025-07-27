@@ -1,0 +1,898 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WINBIT Lottery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #1a1a3d 0%, #000033 100%);
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+      overflow-x: hidden;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+    .number-btn {
+      transition: all 0.3s ease;
+      background: linear-gradient(145deg, #374151, #4b5563);
+      border: 2px solid #6b7280;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      font-weight: bold;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .number-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .number-btn:hover {
+      transform: scale(1.1);
+      background: linear-gradient(145deg, #4c1d95, #6366f1);
+      border-color: #8b5cf6;
+      box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4);
+    }
+    
+    .number-btn:hover::before {
+      left: 100%;
+    }
+    
+    .number-btn.selected {
+      background: linear-gradient(145deg, #059669, #10b981);
+      border: 3px solid #fbbf24;
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(16, 185, 129, 0.3);
+      animation: selectedGlow 2s infinite alternate;
+      font-weight: 900;
+      z-index: 10;
+      position: relative;
+    }
+    
+    .number-btn.selected::after {
+      content: '⭐';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 0.8rem;
+      animation: starTwinkle 1.5s infinite;
+    }
+    
+    @keyframes selectedGlow {
+      0% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(16, 185, 129, 0.3);
+        border-color: #fbbf24;
+      }
+      100% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 60px rgba(16, 185, 129, 0.5);
+        border-color: #f59e0b;
+      }
+    }
+    
+    @keyframes starTwinkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+      50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+    }
+    .buy-btn {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .winning-numbers {
+      animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .number-reveal {
+      animation: numberPop 0.8s ease-out;
+      transform-origin: center;
+    }
+    @keyframes numberPop {
+      0% { 
+        transform: scale(0) rotate(180deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2) rotate(90deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+    .loading-ball {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #8b5cf6, #3b82f6);
+      display: inline-block;
+      margin: 0 8px;
+      animation: bounce 1.5s infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .loading-ball::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-20px); }
+      60% { transform: translateY(-10px); }
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    .draw-button {
+      transition: all 0.3s ease;
+    }
+    .draw-button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    }
+    .draw-button:active {
+      transform: scale(0.98);
+    }
+    .winning-container {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (max-width: 640px) {
+      .loading-ball {
+        width: 45px;
+        height: 45px;
+        margin: 0 4px;
+      }
+      .winning-numbers span {
+        font-size: 1.2rem !important;
+        padding: 8px 12px !important;
+      }
+      .number-btn {
+        width: 3rem !important;
+        height: 3rem !important;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+        margin: 2px;
+      }
+      .number-btn.selected {
+        transform: scale(1.15) !important;
+      }
+      .number-btn:active {
+        transform: scale(0.95);
+      }
+      #number-grid {
+        gap: 8px !important;
+        padding: 10px;
+      }
+      .container {
+        padding: 1rem !important;
+      }
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    
+    /* Popup styles */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .popup-content {
+      background: linear-gradient(135deg, #1a1a3d 0%, #2d1b69 100%);
+      border: 2px solid #8b5cf6;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 90%;
+      width: 400px;
+      text-align: center;
+      transform: scale(0.7);
+      transition: transform 0.3s ease;
+      box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+    }
+    
+    .popup-overlay.show .popup-content {
+      transform: scale(1);
+    }
+    
+    .cart-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s ease-in-out;
+    }
+    
+    .whatsapp-btn {
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    
+    .whatsapp-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+    }
+    
+    .close-popup {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    
+    .close-popup:hover {
+      opacity: 1;
+    }
+    
+    /* Enhanced lottery number display */
+    .lottery-number {
+      background: linear-gradient(145deg, #dc2626, #ef4444);
+      border: 2px solid #fbbf24;
+      color: white;
+      font-weight: 900;
+      font-size: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+      animation: lotteryGlow 2s infinite alternate;
+      position: relative;
+      margin: 2px;
+    }
+    
+    .lottery-number::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #fbbf24, #f59e0b, #dc2626, #ef4444);
+      border-radius: 50%;
+      z-index: -1;
+      animation: borderRotate 3s linear infinite;
+    }
+    
+    @keyframes lotteryGlow {
+      0% { 
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      100% { 
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4);
+      }
+    }
+    
+    @keyframes borderRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 640px) {
+      .lottery-number {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 0.9rem;
+        margin: 1px;
+      }
+    }
+    
+    /* Enhanced ticket card styles */
+    .ticket-card {
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+      border: 2px solid #6b7280;
+      border-radius: 15px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ticket-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+      transition: left 0.5s;
+    }
+    
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      border-color: #8b5cf6;
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+    }
+    
+    .ticket-card:hover::before {
+      left: 100%;
+    }
+    
+    .ticket-number-mini {
+      background: linear-gradient(145deg, #4c1d95, #6366f1);
+      border: 1px solid #8b5cf6;
+      color: white;
+      font-weight: bold;
+      font-size: 0.8rem;
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1px;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .status-confirmed {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-pending {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: white;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-rejected {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="container mx-auto p-4 min-h-screen flex flex-col items-center justify-center">
+    <h1 class="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+      WINBIT Lottery
+    </h1>
+    
+    <!-- Today's Winning Numbers Section - Moved to top -->
+    <div class="mb-8 bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md" id="winning-section">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-center">Today's Winning Numbers</h2>
+      <div class="winning-container">
+        <div id="winning-numbers" class="winning-numbers flex justify-center space-x-2 sm:space-x-4 text-lg sm:text-2xl flex-wrap">
+          <!-- Loading animation will show first -->
+        </div>
+      </div>
+      <p id="draw-time" class="text-center mt-4 text-gray-300 text-sm sm:text-base">8:00 PM 7/26/2025</p>
+    </div>
+    
+    <div class="bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-semibold mb-4 text-center">Pick 4 Numbers (1-50)</h2>
+            <div id="number-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 sm:gap-2 mb-6">
+        <!-- Numbers generated by JS -->
+      </div>
+      
+      <p id="selection-error" class="text-red-400 text-center hidden mb-4">Please select exactly 4 numbers!</p>
+      
+      <!-- Selection status and remove button -->
+      <div id="selection-status" class="mb-4 hidden">
+        <div class="flex justify-between items-center bg-gray-800 border border-purple-500 p-3 rounded-lg">
+          <div>
+            <span class="text-sm text-purple-300">Selected: </span>
+            <span id="selected-count" class="font-bold text-white">0</span>
+            <span class="text-sm text-gray-400">/4</span>
+          </div>
+          <button id="remove-all" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm font-bold transition">
+            🗑️ Clear All
+          </button>
+        </div>
+      </div>
+      
+      <button id="buy-ticket" class="buy-btn w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition">
+        Buy Ticket
+      </button>
+      
+      <!-- Phone number input (shown after clicking buy ticket) -->
+      <div id="phone-input-section" class="mt-4 hidden">
+        <div class="bg-gradient-to-br from-blue-900 to-indigo-900 border-2 border-blue-500 p-4 rounded-xl shadow-lg">
+          <h3 class="font-bold text-blue-300 mb-3 text-center text-lg">🎫 Confirm Your Ticket</h3>
+          
+          <!-- Enhanced selected numbers display -->
+          <div class="mb-4 p-3 bg-black bg-opacity-40 rounded-lg border border-yellow-400">
+            <p class="text-xs text-yellow-300 mb-2 text-center font-semibold">YOUR LUCKY NUMBERS</p>
+            <div id="selected-numbers-display-enhanced" class="flex justify-center gap-2 flex-wrap">
+              <!-- Enhanced numbers will be inserted here -->
+            </div>
+          </div>
+          
+          <input type="tel" id="user-phone" placeholder="📱 Enter your WhatsApp number" 
+                 class="w-full px-4 py-3 mb-4 bg-gray-800 border-2 border-gray-600 rounded-lg text-white text-center text-lg font-mono focus:border-blue-400 focus:outline-none">
+          <div class="flex gap-3">
+            <button id="confirm-ticket" class="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition font-bold text-sm shadow-lg">
+              ✅ Confirm
+            </button>
+            <button id="cancel-ticket" class="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 rounded-lg hover:from-gray-700 hover:to-gray-800 transition font-bold text-sm shadow-lg">
+              ❌ Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Purchase status -->
+      <div id="purchase-status" class="mt-4 hidden">
+        <div class="bg-green-900 border border-green-700 p-4 rounded-lg">
+          <h3 class="font-semibold text-green-400">Ticket Purchased!</h3>
+          <p class="text-sm mt-2">Ticket ID: <span id="ticket-id" class="font-mono"></span></p>
+          <p class="text-sm">Numbers: <span id="ticket-numbers" class="font-mono"></span></p>
+          <p class="text-sm">Phone: <span id="ticket-phone" class="font-mono"></span></p>
+          <p class="text-sm">Status: <span id="ticket-status" class="px-2 py-1 rounded text-xs bg-yellow-600">Pending</span></p>
+          <p class="text-xs mt-2 text-gray-300">Your ticket is pending confirmation. You can check status below.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Tickets Section -->
+    <div class="mt-8 bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-semibold mb-4 text-center">🎫 My Tickets</h2>
+      <div class="mb-4">
+        <input type="tel" id="check-phone" placeholder="📱 Enter your phone number" 
+               class="w-full px-4 py-3 mb-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-white text-center text-lg font-mono focus:border-purple-400 focus:outline-none">
+        <button id="load-tickets" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-bold shadow-lg">
+          🔍 Load My Tickets
+        </button>
+      </div>
+      <div id="user-tickets">
+        <div class="text-center p-6">
+          <!--<div class="text-6xl mb-3"></div> -->
+          <p class="text-gray-400">Enter your phone number to view tickets</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WhatsApp Payment Popup -->
+  <div id="payment-popup" class="popup-overlay">
+    <div class="popup-content">
+      <button class="close-popup" onclick="closePaymentPopup()">×</button>
+      <div class="cart-icon">🛒</div>
+      <h3 class="text-xl font-bold mb-2">ඔබගේ ටිකට් පත වෙන්කර ගැනීම සාර්ථකයි.<br>මුදල් ගෙවීමෙන් පසු ඔබ දිනුම් ඇදීම සදහා ඇතුලත් වේ.</h3>
+      <p class="text-sm mb-4">Selected Numbers: <span id="popup-numbers" class="font-mono text-green-400"></span></p>
+      <button class="whatsapp-btn" onclick="payViaWhatsApp()">
+        💬 මුදල් ගෙවීම
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Canvas for starry background
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function createStars() {
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = `${Math.random() * 3}px`;
+        star.style.height = star.style.width;
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        document.body.appendChild(star);
+      }
+    }
+    createStars();
+
+    // Number selection
+    const numberGrid = document.getElementById('number-grid');
+    const selectedNumbers = new Set();
+    
+    for (let i = 1; i <= 50; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'number-btn bg-gray-700 text-white w-12 h-12 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base';
+      btn.textContent = i;
+      btn.addEventListener('click', () => {
+        if (selectedNumbers.has(i)) {
+          selectedNumbers.delete(i);
+          btn.classList.remove('selected');
+        } else if (selectedNumbers.size < 4) {
+          selectedNumbers.add(i);
+          btn.classList.add('selected');
+        }
+        updateSelectionStatus();
+      });
+      numberGrid.appendChild(btn);
+    }
+
+    // Update selection status
+    function updateSelectionStatus() {
+      const count = selectedNumbers.size;
+      document.getElementById('selected-count').textContent = count;
+      
+      // Show/hide selection status
+      if (count > 0) {
+        document.getElementById('selection-status').classList.remove('hidden');
+      } else {
+        document.getElementById('selection-status').classList.add('hidden');
+      }
+      
+      // Show/hide error message
+      document.getElementById('selection-error').classList.toggle('hidden', count === 4);
+    }
+
+    // Remove all selected numbers
+    document.getElementById('remove-all').addEventListener('click', () => {
+      selectedNumbers.clear();
+      document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
+      updateSelectionStatus();
+    });
+
+    // Buy ticket
+    document.getElementById('buy-ticket').addEventListener('click', async () => {
+      if (selectedNumbers.size !== 4) {
+        document.getElementById('selection-error').classList.remove('hidden');
+        return;
+      }
+      
+      // Hide error and show phone input section
+      document.getElementById('selection-error').classList.add('hidden');
+      
+      // Create enhanced lottery number display
+      const sortedNumbers = [...selectedNumbers].sort((a, b) => a - b);
+      const enhancedDisplay = document.getElementById('selected-numbers-display-enhanced');
+      enhancedDisplay.innerHTML = sortedNumbers.map(num => 
+        `<div class="lottery-number">${num}</div>`
+      ).join('');
+      
+      document.getElementById('phone-input-section').classList.remove('hidden');
+    });
+
+    // Confirm ticket with phone number
+    document.getElementById('confirm-ticket').addEventListener('click', async () => {
+      const phoneNumber = document.getElementById('user-phone').value.trim();
+      
+      if (!phoneNumber) {
+        alert('Please enter your phone number');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('phone', phoneNumber);
+      formData.append('numbers', JSON.stringify([...selectedNumbers].sort((a, b) => a - b)));
+      
+      try {
+        const response = await fetch('/api/tickets', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          // Show purchase status
+          document.getElementById('ticket-id').textContent = result.id;
+          document.getElementById('ticket-numbers').textContent = result.numbers.join(', ');
+          document.getElementById('ticket-phone').textContent = result.phone;
+          document.getElementById('purchase-status').classList.remove('hidden');
+          document.getElementById('phone-input-section').classList.add('hidden');
+          
+          // Show WhatsApp payment popup
+          document.getElementById('popup-numbers').textContent = result.numbers.join(', ');
+          document.getElementById('payment-popup').classList.add('show');
+          
+          // Clear form
+          selectedNumbers.clear();
+          document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
+          document.getElementById('user-phone').value = '';
+        } else {
+          alert('Error: ' + result.error);
+        }
+      } catch (error) {
+        alert('Network error. Please try again.');
+      }
+    });
+
+    // Cancel ticket
+    document.getElementById('cancel-ticket').addEventListener('click', () => {
+      document.getElementById('phone-input-section').classList.add('hidden');
+      document.getElementById('user-phone').value = '';
+    });
+
+    // Load user tickets
+    document.getElementById('load-tickets').addEventListener('click', async () => {
+      const phone = document.getElementById('check-phone').value.trim();
+      if (!phone) {
+        alert('Please enter your phone number');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/user-tickets/${phone}`);
+        const tickets = await response.json();
+        
+        const ticketsDiv = document.getElementById('user-tickets');
+        
+        if (tickets.length === 0) {
+          ticketsDiv.innerHTML = `
+            <div class="text-center p-6">
+              <div class="text-6xl mb-3">😔</div>
+              <p class="text-gray-400">No tickets found for this number</p>
+              <p class="text-xs text-gray-500 mt-2">Try purchasing a ticket first!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        ticketsDiv.innerHTML = tickets.map(ticket => {
+          const statusClasses = {
+            'confirmed': 'status-confirmed',
+            'rejected': 'status-rejected',
+            'pending': 'status-pending'
+          };
+          
+          const statusIcons = {
+            'confirmed': '✅',
+            'rejected': '❌', 
+            'pending': '⏳'
+          };
+          
+          const statusText = {
+            'confirmed': 'Confirmed',
+            'rejected': 'Rejected',
+            'pending': 'Pending'
+          };
+          
+          const numbersDisplay = ticket.selected_numbers.map(num => 
+            `<span class="ticket-number-mini">${num}</span>`
+          ).join('');
+          
+          return `
+            <div class="ticket-card">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-mono text-gray-400">ID:</span>
+                    <span class="font-bold text-white">#${ticket.id}</span>
+                  </div>
+                  <div class="text-xs text-gray-400">
+                    📅 ${new Date(ticket.purchase_date).toLocaleDateString()}
+                  </div>
+                </div>
+                <span class="status-badge ${statusClasses[ticket.status]}">
+                  ${statusIcons[ticket.status]} ${statusText[ticket.status]}
+                </span>
+              </div>
+              
+              <div class="mb-2">
+                <p class="text-xs text-purple-300 font-semibold mb-1">SELECTED NUMBERS</p>
+                <div class="flex gap-1 flex-wrap">
+                  ${numbersDisplay}
+                </div>
+              </div>
+              
+              ${ticket.status === 'confirmed' ? `
+                <div class="mt-3 p-2 bg-green-900 bg-opacity-30 border border-green-700 rounded-lg">
+                  <p class="text-xs text-green-300 font-semibold">🎉 CONGRATULATIONS!</p>
+                  <p class="text-xs text-green-200">Your ticket has been confirmed</p>
+                </div>
+              ` : ticket.status === 'rejected' ? `
+                <div class="mt-3 p-2 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg">
+                  <p class="text-xs text-red-300 font-semibold">❗ TICKET REJECTED</p>
+                  <p class="text-xs text-red-200">Please contact support if needed</p>
+                </div>
+              ` : `
+                <div class="mt-3 p-2 bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg">
+                  <p class="text-xs text-yellow-300 font-semibold">⏳ AWAITING CONFIRMATION</p>
+                  <p class="text-xs text-yellow-200">Please send payment receipt via WhatsApp</p>
+                </div>
+              `}
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        document.getElementById('user-tickets').innerHTML = '<p class="text-red-400 text-center">Error loading tickets</p>';
+      }
+    });
+
+    // Load latest winning numbers and auto-display
+    let currentWinningNumbers = null;
+    let isAnimating = false;
+
+    async function loadWinningNumbers() {
+      try {
+        const response = await fetch('/api/winning-numbers/latest');
+        const winningData = await response.json();
+        
+        if (winningData && winningData.numbers) {
+          currentWinningNumbers = winningData.numbers;
+          // Auto-start animation when numbers are loaded
+          setTimeout(() => {
+            animatedLotteryDraw();
+          }, 1000); // 1 second delay after page load
+        } else {
+          // Show "no numbers set" message if no winning numbers
+          document.getElementById('winning-numbers').innerHTML = `
+            <div class="text-center">
+              <div class="text-4xl mb-2">⏰</div>
+              <p class="text-yellow-400 text-base sm:text-lg font-semibold">දිනුම් ඇදීම අද රාත්‍රී 8:00 !!</p>
+              <p class="text-xs text-gray-400 mt-1">Check back at 8:00 PM</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading winning numbers:', error);
+        document.getElementById('winning-numbers').innerHTML = `
+          <div class="text-center">
+            <div class="text-4xl mb-2">🔌</div>
+            <p class="text-red-400 text-base sm:text-lg font-semibold">Connection Error</p>
+            <p class="text-xs text-gray-400 mt-1">Please refresh the page</p>
+          </div>
+        `;
+      }
+    }
+
+    // Animated lottery draw
+    function animatedLotteryDraw() {
+      if (isAnimating || !currentWinningNumbers || currentWinningNumbers.length === 0) {
+        return;
+      }
+      
+      isAnimating = true;
+      const winningDiv = document.getElementById('winning-numbers');
+      
+      // Show loading balls
+      winningDiv.innerHTML = Array(4).fill(0).map(() => 
+        '<div class="loading-ball"></div>'
+      ).join('');
+      
+      // Reveal numbers one by one
+      setTimeout(() => {
+        winningDiv.innerHTML = '';
+        
+        currentWinningNumbers.forEach((num, index) => {
+          setTimeout(() => {
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'lottery-number number-reveal';
+            numberSpan.textContent = num;
+            winningDiv.appendChild(numberSpan);
+            
+            if (index === currentWinningNumbers.length - 1) {
+              setTimeout(() => {
+                isAnimating = false;
+              }, 800);
+            }
+          }, index * 1000); // 1 second delay between each number
+        });
+      }, 3000); // 3 seconds of loading animation
+    }
+
+    
+    // Load winning numbers on page load
+    loadWinningNumbers();
+
+    // WhatsApp popup functions
+    function closePaymentPopup() {
+      document.getElementById('payment-popup').classList.remove('show');
+    }
+
+    function payViaWhatsApp() {
+      // Replace with your actual WhatsApp number (include country code, no + or spaces)
+      window.open('https://wa.me/1234567890', '_blank');
+      closePaymentPopup();
+    }
+  </script>
+</body>
+</html>
