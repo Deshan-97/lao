@@ -61,6 +61,30 @@ A modern web-based lottery system built with Node.js and Express, featuring a us
    - User Interface: `http://localhost:3000`
    - Admin Panel: `http://localhost:3000/admin`
 
+## Render Deployment (Free Tier)
+
+This project includes a solution for Render's free tier database persistence issue:
+
+### The Problem
+Render's free tier resets the filesystem when the service goes to sleep, causing the SQLite database to be lost.
+
+### The Solution
+- **`default.db`**: A pre-configured database file committed to the repository
+- **Auto-restore**: Server automatically copies from `default.db` when `db.sqlite` is missing
+- **Separation**: `db.sqlite` is gitignored to keep user data separate from the template
+
+### How It Works
+1. When the server starts, it checks if `db.sqlite` exists
+2. If not found, it automatically copies from `default.db`
+3. This ensures the database structure is always available after Render sleep/wake cycles
+4. Your table structure and any default data in `default.db` will be preserved
+
+### Deployment Steps for Render
+1. Push your code with `default.db` to GitHub
+2. Connect your GitHub repo to Render
+3. Deploy - the database will auto-initialize from `default.db`
+4. After Render sleep/wake, the database structure is automatically restored
+
 ## API Endpoints
 
 ### Public Endpoints
