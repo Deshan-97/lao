@@ -71,15 +71,25 @@ Render's free tier resets the filesystem when the service goes to sleep, causing
 ### The Solution
 - **`default.db`**: A pre-configured database file with empty table structures (no data)
 - **Auto-restore**: Server automatically copies from `default.db` when `db.sqlite` is missing
+- **Environment Variables**: Winning numbers persist across restarts using Render environment variables
 - **Separation**: `db.sqlite` is gitignored to keep user data separate from the template
-- **Clean Start**: Each restore provides fresh, empty tables without old data
+- **Clean Start**: Each restore provides fresh, empty tables without old data, but preserves current winning numbers
 
 ### How It Works
 1. When the server starts, it checks if `db.sqlite` exists
 2. If not found, it automatically copies from `default.db`
-3. This ensures the database structure is always available after Render sleep/wake cycles
-4. Your table structure is preserved, but you start with clean, empty tables
-5. No old winning numbers or tickets will carry over from previous sessions
+3. After database initialization, it restores winning numbers from environment variables
+4. When you set winning numbers via admin panel, they're saved to both database and environment
+5. This ensures winning numbers persist even after Render sleep/wake cycles
+6. Old tickets are cleared, but current winning numbers remain available
+
+### Setting Up Environment Variables on Render
+1. In your Render dashboard, go to your service settings
+2. Navigate to "Environment" tab
+3. The system automatically manages these variables:
+   - `CURRENT_WINNING_NUMBERS` - JSON array of current winning numbers
+   - `CURRENT_DRAW_DATE` - Date of the current draw
+4. You don't need to set these manually - they're set when you use the admin panel
 
 ### Deployment Steps for Render
 1. Push your code with `default.db` to GitHub

@@ -36,6 +36,32 @@ function initializeDatabase() {
   }
 }
 
+// Function to restore winning numbers from environment variable (called after db connection)
+function restoreWinningNumbersFromEnv() {
+  const savedNumbers = process.env.CURRENT_WINNING_NUMBERS;
+  const savedDate = process.env.CURRENT_DRAW_DATE;
+  
+  if (savedNumbers && savedDate) {
+    console.log('Restoring winning numbers from environment...');
+    
+    // Parse the numbers from environment
+    const numbers = JSON.parse(savedNumbers);
+    
+    // Insert into database
+    db.run(
+      'INSERT INTO winning_numbers (numbers, draw_date) VALUES (?, ?)',
+      [JSON.stringify(numbers), savedDate],
+      function(err) {
+        if (err) {
+          console.error('Error restoring winning numbers:', err);
+        } else {
+          console.log('Winning numbers restored:', numbers, 'for date:', savedDate);
+        }
+      }
+    );
+  }
+}
+
 // Initialize database before connecting
 initializeDatabase();
 
@@ -77,7 +103,10 @@ db.serialize(() => {
     numbers TEXT NOT NULL,
     draw_date DATE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+  )`, () => {
+    // After tables are created, restore winning numbers from environment if needed
+    restoreWinningNumbersFromEnv();
+  });
 });
 
 // Set up multer for handling image uploads
@@ -244,6 +273,12 @@ app.post('/api/winning-numbers', (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    
+    // Save to environment variables for persistence across Render restarts
+    process.env.CURRENT_WINNING_NUMBERS = JSON.stringify(numbers);
+    process.env.CURRENT_DRAW_DATE = drawDate;
+    console.log('Winning numbers saved to environment:', numbers, 'for date:', drawDate);
+    
     res.json({ id: this.lastID, numbers, drawDate });
   });
 });
@@ -272,6 +307,12 @@ app.delete('/api/winning-numbers/clear', (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
+    
+    // Also clear from environment variables
+    delete process.env.CURRENT_WINNING_NUMBERS;
+    delete process.env.CURRENT_DRAW_DATE;
+    console.log('Winning numbers cleared from both database and environment');
+    
     res.json({ success: true, message: 'All winning numbers cleared' });
   });
 });
