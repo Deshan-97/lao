@@ -69,15 +69,17 @@ This project includes a solution for Render's free tier database persistence iss
 Render's free tier resets the filesystem when the service goes to sleep, causing the SQLite database to be lost.
 
 ### The Solution
-- **`default.db`**: A pre-configured database file committed to the repository
+- **`default.db`**: A pre-configured database file with empty table structures (no data)
 - **Auto-restore**: Server automatically copies from `default.db` when `db.sqlite` is missing
 - **Separation**: `db.sqlite` is gitignored to keep user data separate from the template
+- **Clean Start**: Each restore provides fresh, empty tables without old data
 
 ### How It Works
 1. When the server starts, it checks if `db.sqlite` exists
 2. If not found, it automatically copies from `default.db`
 3. This ensures the database structure is always available after Render sleep/wake cycles
-4. Your table structure and any default data in `default.db` will be preserved
+4. Your table structure is preserved, but you start with clean, empty tables
+5. No old winning numbers or tickets will carry over from previous sessions
 
 ### Deployment Steps for Render
 1. Push your code with `default.db` to GitHub
