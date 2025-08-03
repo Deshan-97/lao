@@ -25,6 +25,9 @@ pids
 coverage/
 *.lcov
 
+# Database files (keep default.db in git)
+db.sqlite
+
 # OS generated files
 .DS_Store
 .DS_Store?

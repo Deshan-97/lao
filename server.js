@@ -8,11 +8,36 @@ const path = require('path');
 const bodyParser = require('body-parser');
 // Import multer for handling file uploads (like images)
 const multer = require('multer');
+// Import fs for file system operations
+const fs = require('fs');
 
 // Create an Express application
 const app = express();
 // Set the port number for the server
 const PORT = 3000;
+
+// Database initialization - copy from default.db if db.sqlite doesn't exist
+function initializeDatabase() {
+  const dbPath = './db.sqlite';
+  const defaultDbPath = './default.db';
+  
+  // Check if main database exists
+  if (!fs.existsSync(dbPath)) {
+    // Check if default.db exists
+    if (fs.existsSync(defaultDbPath)) {
+      console.log('Database not found. Copying from default.db...');
+      fs.copyFileSync(defaultDbPath, dbPath);
+      console.log('Database restored from default.db');
+    } else {
+      console.log('No default.db found. Database will be created with empty tables.');
+    }
+  } else {
+    console.log('Existing database found.');
+  }
+}
+
+// Initialize database before connecting
+initializeDatabase();
 
 // Set up and connect to the SQLite database file (db.sqlite)
 const db = new sqlite3.Database('./db.sqlite', (err) => {
