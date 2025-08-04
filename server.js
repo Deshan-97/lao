@@ -41,6 +41,10 @@ function restoreWinningNumbersFromEnv() {
   const savedNumbers = process.env.CURRENT_WINNING_NUMBERS;
   const savedDate = process.env.CURRENT_DRAW_DATE;
   
+  console.log('=== CHECKING ENVIRONMENT VARIABLES ===');
+  console.log('CURRENT_WINNING_NUMBERS:', savedNumbers);
+  console.log('CURRENT_DRAW_DATE:', savedDate);
+  
   if (savedNumbers && savedDate) {
     // Check if the saved date is today or recent (not old data)
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -48,9 +52,11 @@ function restoreWinningNumbersFromEnv() {
     const todayObj = new Date(today);
     const daysDiff = Math.floor((todayObj - savedDateObj) / (1000 * 60 * 60 * 24));
     
+    console.log('Date comparison - Today:', today, 'Saved:', savedDate, 'Days diff:', daysDiff);
+    
     // Only restore if the date is within last 7 days (not old data)
     if (daysDiff <= 7 && daysDiff >= 0) {
-      console.log('Restoring winning numbers from environment...');
+      console.log('✅ RESTORING winning numbers from environment...');
       
       // Parse the numbers from environment
       const numbers = JSON.parse(savedNumbers);
@@ -61,21 +67,23 @@ function restoreWinningNumbersFromEnv() {
         [JSON.stringify(numbers), savedDate],
         function(err) {
           if (err) {
-            console.error('Error restoring winning numbers:', err);
+            console.error('❌ Error restoring winning numbers:', err);
           } else {
-            console.log('Winning numbers restored:', numbers, 'for date:', savedDate);
+            console.log('✅ Winning numbers restored:', numbers, 'for date:', savedDate);
           }
         }
       );
     } else {
-      console.log('Ignoring old environment variables from', savedDate, '(too old or future date)');
+      console.log('🚫 Ignoring old environment variables from', savedDate, '(too old or future date)');
       // Clear old environment variables
       delete process.env.CURRENT_WINNING_NUMBERS;
       delete process.env.CURRENT_DRAW_DATE;
+      console.log('🧹 Old environment variables cleared');
     }
   } else {
-    console.log('No winning numbers in environment to restore');
+    console.log('ℹ️  No winning numbers in environment to restore');
   }
+  console.log('=== END ENVIRONMENT CHECK ===');
 }
 
 // Initialize database before connecting
@@ -284,18 +292,34 @@ app.post('/api/winning-numbers', (req, res) => {
     return res.status(400).json({ error: 'Exactly 4 numbers required' });
   }
   
-  db.run('INSERT INTO winning_numbers (numbers, draw_date) VALUES (?, ?)', 
-    [JSON.stringify(numbers), drawDate], function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  // First, clear ALL existing winning numbers to avoid duplicates
+  db.run('DELETE FROM winning_numbers', [], function(deleteErr) {
+    if (deleteErr) {
+      return res.status(500).json({ error: deleteErr.message });
     }
     
-    // Save to environment variables for persistence across Render restarts
-    process.env.CURRENT_WINNING_NUMBERS = JSON.stringify(numbers);
-    process.env.CURRENT_DRAW_DATE = drawDate;
-    console.log('Winning numbers saved to environment:', numbers, 'for date:', drawDate);
+    console.log('Previous winning numbers cleared');
     
-    res.json({ id: this.lastID, numbers, drawDate });
+    // Now insert the new winning numbers
+    db.run('INSERT INTO winning_numbers (numbers, draw_date) VALUES (?, ?)', 
+      [JSON.stringify(numbers), drawDate], function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      // FORCE UPDATE environment variables (replace old ones completely)
+      process.env.CURRENT_WINNING_NUMBERS = JSON.stringify(numbers);
+      process.env.CURRENT_DRAW_DATE = drawDate;
+      
+      console.log('=== WINNING NUMBERS UPDATED ===');
+      console.log('New numbers:', numbers);
+      console.log('New date:', drawDate);
+      console.log('Environment CURRENT_WINNING_NUMBERS:', process.env.CURRENT_WINNING_NUMBERS);
+      console.log('Environment CURRENT_DRAW_DATE:', process.env.CURRENT_DRAW_DATE);
+      console.log('=== END UPDATE ===');
+      
+      res.json({ id: this.lastID, numbers, drawDate, replaced: true });
+    });
   });
 });
 
