@@ -49,7 +49,7 @@ function restoreWinningNumbersFromEnv() {
     const daysDiff = Math.floor((todayObj - savedDateObj) / (1000 * 60 * 60 * 24));
     
     // Only restore if the date is within last 7 days (not old data)
-    if (daysDiff <= 7) {
+    if (daysDiff <= 7 && daysDiff >= 0) {
       console.log('Restoring winning numbers from environment...');
       
       // Parse the numbers from environment
@@ -68,7 +68,7 @@ function restoreWinningNumbersFromEnv() {
         }
       );
     } else {
-      console.log('Ignoring old environment variables from', savedDate, '(too old)');
+      console.log('Ignoring old environment variables from', savedDate, '(too old or future date)');
       // Clear old environment variables
       delete process.env.CURRENT_WINNING_NUMBERS;
       delete process.env.CURRENT_DRAW_DATE;
