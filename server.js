@@ -42,23 +42,39 @@ function restoreWinningNumbersFromEnv() {
   const savedDate = process.env.CURRENT_DRAW_DATE;
   
   if (savedNumbers && savedDate) {
-    console.log('Restoring winning numbers from environment...');
+    // Check if the saved date is today or recent (not old data)
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const savedDateObj = new Date(savedDate);
+    const todayObj = new Date(today);
+    const daysDiff = Math.floor((todayObj - savedDateObj) / (1000 * 60 * 60 * 24));
     
-    // Parse the numbers from environment
-    const numbers = JSON.parse(savedNumbers);
-    
-    // Insert into database
-    db.run(
-      'INSERT INTO winning_numbers (numbers, draw_date) VALUES (?, ?)',
-      [JSON.stringify(numbers), savedDate],
-      function(err) {
-        if (err) {
-          console.error('Error restoring winning numbers:', err);
-        } else {
-          console.log('Winning numbers restored:', numbers, 'for date:', savedDate);
+    // Only restore if the date is within last 7 days (not old data)
+    if (daysDiff <= 7) {
+      console.log('Restoring winning numbers from environment...');
+      
+      // Parse the numbers from environment
+      const numbers = JSON.parse(savedNumbers);
+      
+      // Insert into database
+      db.run(
+        'INSERT INTO winning_numbers (numbers, draw_date) VALUES (?, ?)',
+        [JSON.stringify(numbers), savedDate],
+        function(err) {
+          if (err) {
+            console.error('Error restoring winning numbers:', err);
+          } else {
+            console.log('Winning numbers restored:', numbers, 'for date:', savedDate);
+          }
         }
-      }
-    );
+      );
+    } else {
+      console.log('Ignoring old environment variables from', savedDate, '(too old)');
+      // Clear old environment variables
+      delete process.env.CURRENT_WINNING_NUMBERS;
+      delete process.env.CURRENT_DRAW_DATE;
+    }
+  } else {
+    console.log('No winning numbers in environment to restore');
   }
 }
 
@@ -314,6 +330,19 @@ app.delete('/api/winning-numbers/clear', (req, res) => {
     console.log('Winning numbers cleared from both database and environment');
     
     res.json({ success: true, message: 'All winning numbers cleared' });
+  });
+});
+
+// Force clear environment variables (emergency fix for old data)
+app.delete('/api/winning-numbers/clear-env', (req, res) => {
+  // Clear from environment variables
+  delete process.env.CURRENT_WINNING_NUMBERS;
+  delete process.env.CURRENT_DRAW_DATE;
+  console.log('Environment variables force cleared');
+  
+  res.json({ 
+    success: true, 
+    message: 'Environment variables cleared. Old winning numbers will not restore on next restart.' 
   });
 });
 
