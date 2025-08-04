@@ -38,6 +38,12 @@ function initializeDatabase() {
 
 // Function to restore winning numbers from environment variable (called after db connection)
 function restoreWinningNumbersFromEnv() {
+  // Check if environment restoration is disabled
+  if (process.env.DISABLE_ENV_RESTORE === 'true') {
+    console.log('🚫 Environment restoration disabled - starting with clean state');
+    return;
+  }
+  
   const savedNumbers = process.env.CURRENT_WINNING_NUMBERS;
   const savedDate = process.env.CURRENT_DRAW_DATE;
   
@@ -310,12 +316,15 @@ app.post('/api/winning-numbers', (req, res) => {
       // FORCE UPDATE environment variables (replace old ones completely)
       process.env.CURRENT_WINNING_NUMBERS = JSON.stringify(numbers);
       process.env.CURRENT_DRAW_DATE = drawDate;
+      // Re-enable environment restoration for new numbers
+      delete process.env.DISABLE_ENV_RESTORE;
       
       console.log('=== WINNING NUMBERS UPDATED ===');
       console.log('New numbers:', numbers);
       console.log('New date:', drawDate);
       console.log('Environment CURRENT_WINNING_NUMBERS:', process.env.CURRENT_WINNING_NUMBERS);
       console.log('Environment CURRENT_DRAW_DATE:', process.env.CURRENT_DRAW_DATE);
+      console.log('Environment restoration: ENABLED');
       console.log('=== END UPDATE ===');
       
       res.json({ id: this.lastID, numbers, drawDate, replaced: true });
@@ -348,12 +357,18 @@ app.delete('/api/winning-numbers/clear', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     
-    // Also clear from environment variables
+    // Clear from environment variables AND disable future restoration
     delete process.env.CURRENT_WINNING_NUMBERS;
     delete process.env.CURRENT_DRAW_DATE;
-    console.log('Winning numbers cleared from both database and environment');
+    process.env.DISABLE_ENV_RESTORE = 'true';
     
-    res.json({ success: true, message: 'All winning numbers cleared' });
+    console.log('🧹 COMPLETE CLEAR: Database and environment cleared');
+    console.log('🚫 Environment restoration DISABLED - will start clean on restart');
+    
+    res.json({ 
+      success: true, 
+      message: 'All winning numbers cleared. Environment restoration disabled.' 
+    });
   });
 });
 
@@ -362,11 +377,39 @@ app.delete('/api/winning-numbers/clear-env', (req, res) => {
   // Clear from environment variables
   delete process.env.CURRENT_WINNING_NUMBERS;
   delete process.env.CURRENT_DRAW_DATE;
+  process.env.DISABLE_ENV_RESTORE = 'true';
   console.log('Environment variables force cleared');
+  console.log('Environment restoration DISABLED');
   
   res.json({ 
     success: true, 
-    message: 'Environment variables cleared. Old winning numbers will not restore on next restart.' 
+    message: 'Environment variables cleared. Old winning numbers will never restore again.' 
+  });
+});
+
+// Emergency nuclear option - completely reset everything
+app.delete('/api/winning-numbers/nuclear-clear', (req, res) => {
+  // Clear database
+  db.run('DELETE FROM winning_numbers', [], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    // Clear ALL environment variables related to winning numbers
+    delete process.env.CURRENT_WINNING_NUMBERS;
+    delete process.env.CURRENT_DRAW_DATE;
+    process.env.DISABLE_ENV_RESTORE = 'true';
+    
+    console.log('🚨 NUCLEAR CLEAR EXECUTED 🚨');
+    console.log('✅ Database cleared');
+    console.log('✅ Environment variables cleared');
+    console.log('✅ Environment restoration PERMANENTLY DISABLED');
+    console.log('System will start completely clean on next restart');
+    
+    res.json({ 
+      success: true, 
+      message: 'NUCLEAR CLEAR: Everything reset. System will start completely clean.' 
+    });
   });
 });
 
