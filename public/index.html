@@ -848,8 +848,14 @@
           };
           
           // Update draw time display
+          const drawDate = new Date(winningData.draw_date);
+          const formattedDate = drawDate.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric'
+          });
           document.getElementById('draw-time').textContent = 
-            `${winningData.draw_time} ${winningData.draw_date}`;
+            `${winningData.draw_time} ${formattedDate}`;
           
           // Auto-start animation when numbers are loaded
           setTimeout(() => {
