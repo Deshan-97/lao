@@ -1,33 +1,67 @@
-# Galaxy Lottery System
+# WINBIT Lottery System
 
-A modern web-based lottery system built with Node.js and Express, featuring a user-friendly interface for lottery ticket purchasing and an admin panel for managing draws and tickets.
+A modern lottery system with HTML-based winning numbers management and PostgreSQL database.
 
-## Features
+## 🔧 Setup & Installation
 
-### User Features
-- **Interactive Ticket Purchase**: Select 4 numbers from 1-50 with visual feedback
-- **Receipt Upload**: Upload payment receipts for ticket verification
-- **Mobile-Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Dark Theme**: Modern galaxy-themed UI with Tailwind CSS
+### Prerequisites
+- Node.js (v14 or higher)
+- PostgreSQL database
 
-### Admin Features
-- **Admin Panel**: Comprehensive management interface at `/admin`
-- **Winning Number Management**: Set and clear winning numbers for draws
-- **Ticket Management**: View, confirm, or reject submitted tickets
-- **Receipt Verification**: Review uploaded payment receipts
-- **Status Filtering**: Filter tickets by status (pending, confirmed, rejected)
+### Database Setup
 
-## Technology Stack
+#### Option 1: Local PostgreSQL
+1. Install PostgreSQL on your system
+2. Create a database: `lottery_db`
+3. Set environment variable: `DATABASE_URL=postgresql://username:password@localhost:5432/lottery_db`
 
-- **Backend**: Node.js with Express.js
-- **Database**: SQLite3 for lightweight data storage
-- **Frontend**: HTML5, CSS3 (Tailwind CSS), Vanilla JavaScript
-- **File Upload**: Multer for handling receipt uploads
-- **Styling**: Tailwind CSS for responsive design
+#### Option 2: Online PostgreSQL (Recommended for Production)
+1. Create a PostgreSQL database on services like:
+   - [Render](https://render.com) (Free tier available)
+   - [Railway](https://railway.app)
+   - [Supabase](https://supabase.com)
+   - [ElephantSQL](https://www.elephantsql.com)
+2. Copy the connection string and set as `DATABASE_URL` environment variable
 
-## Project Structure
-
+### Installation
+```bash
+npm install
+npm start
 ```
+
+## 🎯 Features
+
+### ✅ HTML-Based Winning Numbers
+- Edit winning numbers directly in `public/index.html`
+- No server restart required
+- Persistent after deployment restarts
+
+### 🎫 Lottery System
+- User ticket purchases
+- Phone number validation
+- WhatsApp integration for payments
+- Admin panel for ticket management
+
+### 🗄️ PostgreSQL Database
+- Modern, scalable database
+- ACID compliance
+- Better performance than SQLite
+- Cloud-ready
+
+## 🎮 How to Set Winning Numbers
+
+Edit the winning numbers in `public/index.html`:
+```html
+<div id="winning-numbers-data" style="display: none;">
+  {
+    "numbers": [7, 15, 23, 42],
+    "drawDate": "06/08/2025",
+    "drawTime": "8:00 PM"
+  }
+</div>
+```
+
+Save the file - changes appear immediately!
 ├── server.js              # Main server file
 ├── package.json           # Project dependencies
 ├── db.sqlite             # SQLite database
