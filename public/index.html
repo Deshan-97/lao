@@ -234,6 +234,26 @@
       }
       .container {
         padding: 1rem !important;
+        padding-top: 4rem !important; /* Extra space for fixed header */
+      }
+      /* Mobile header adjustments */
+      .fixed.top-4.left-4 h1 {
+        font-size: 1rem !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+      /* Optimize ticket cards for mobile */
+      .ticket-card {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+      }
+      .ticket-number-mini {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.7rem;
+      }
+      /* Better spacing for mobile */
+      .bg-gray-900.bg-opacity-80 {
+        margin: 0.5rem 0;
       }
     }
     .star {
@@ -328,6 +348,176 @@
       opacity: 1;
     }
     
+    /* Phone number popup styles */
+    .phone-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .phone-popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .phone-popup-content {
+      background: linear-gradient(135deg, #1a1a3d 0%, #2d1b69 100%);
+      border: 2px solid #8b5cf6;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 90%;
+      width: 400px;
+      text-align: center;
+      transform: scale(0.7);
+      transition: transform 0.3s ease;
+      box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+      position: relative;
+    }
+    
+    .phone-popup-overlay.show .phone-popup-content {
+      transform: scale(1);
+    }
+    
+    .phone-popup-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    .phone-popup-numbers {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      border: 2px solid #fbbf24;
+    }
+    
+    .phone-popup-number {
+      background: linear-gradient(145deg, #059669, #10b981);
+      border: 2px solid #fbbf24;
+      color: white;
+      font-weight: 900;
+      font-size: 1.2rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+      animation: phoneNumberGlow 2s infinite alternate;
+    }
+    
+    @keyframes phoneNumberGlow {
+      0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+      100% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.8); }
+    }
+    
+    .phone-input-field {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid #6b7280;
+      border-radius: 15px;
+      color: white;
+      font-size: 1.1rem;
+      text-align: center;
+      font-family: monospace;
+      transition: all 0.3s ease;
+    }
+    
+    .phone-input-field:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    
+    .phone-input-field.valid {
+      border-color: #10b981;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .phone-input-field.invalid {
+      border-color: #ef4444;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    
+    .phone-confirm-btn {
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+      width: 45%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .phone-confirm-btn:disabled {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .phone-confirm-btn:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+    }
+    
+    .phone-cancel-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+      width: 45%;
+    }
+    
+    .phone-cancel-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+    
+    .phone-validation-message {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      min-height: 1.5rem;
+    }
+    
+    .phone-validation-message.valid {
+      color: #10b981;
+    }
+    
+    .phone-validation-message.invalid {
+      color: #ef4444;
+    }
+    
     /* Enhanced lottery number display */
     .lottery-number {
       background: linear-gradient(145deg, #dc2626, #ef4444);
@@ -380,6 +570,45 @@
         height: 2.2rem;
         font-size: 0.9rem;
         margin: 1px;
+      }
+      
+      .phone-popup-content {
+        max-width: 95%;
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      
+      .phone-popup-title {
+        font-size: 1.2rem;
+        line-height: 1.4;
+      }
+      
+      .phone-popup-numbers {
+        gap: 6px;
+        padding: 0.8rem;
+        flex-wrap: wrap;
+      }
+      
+      .phone-popup-number {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+      }
+      
+      .phone-input-field {
+        padding: 0.8rem;
+        font-size: 1rem;
+      }
+      
+      .phone-confirm-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+      }
+      
+      .close-popup {
+        font-size: 1.2rem;
+        top: 8px;
+        right: 12px;
       }
     }
     
@@ -484,10 +713,15 @@
   -->
 
   <canvas id="stars"></canvas>
-  <div class="container mx-auto p-4 min-h-screen flex flex-col items-center justify-center">
-    <h1 class="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+  
+  <!-- Mobile optimized header positioned in top corner -->
+  <div class="fixed top-4 left-4 z-10">
+    <h1 class="text-lg sm:text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
       WINBIT Lottery
     </h1>
+  </div>
+  
+  <div class="container mx-auto p-4 pt-16 min-h-screen flex flex-col items-center justify-center">
     
     <!-- Today's Winning Numbers Section - Moved to top -->
     <div class="mb-8 bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md" id="winning-section">
@@ -501,7 +735,7 @@
     </div>
     
     <div class="bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h2 class="text-2xl font-semibold mb-4 text-center">WinBit - Pick 4 numbers,
+      <h2 class="text-2xl font-semibold mb-4 text-center">Pick 4 numbers,
               <br>ඔබට අවශ්‍ය අංක 4ක් තෝරන්න💰</h2>
             <div id="number-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 sm:gap-2 mb-6">
         <!-- Numbers generated by JS -->
@@ -556,24 +790,24 @@
       <!-- Purchase status -->
       <div id="purchase-status" class="mt-4 hidden">
         <div class="bg-green-900 border border-green-700 p-4 rounded-lg">
-          <h3 class="font-semibold text-green-400">Ticket Purchased!</h3>
+          <h3 class="font-semibold text-green-400">මිලදී ගැනීම සාර්ථකයි</h3>
           <p class="text-sm mt-2">Ticket ID: <span id="ticket-id" class="font-mono"></span></p>
           <p class="text-sm">Numbers: <span id="ticket-numbers" class="font-mono"></span></p>
           <p class="text-sm">Phone: <span id="ticket-phone" class="font-mono"></span></p>
           <p class="text-sm">Status: <span id="ticket-status" class="px-2 py-1 rounded text-xs bg-yellow-600">Pending</span></p>
-          <p class="text-xs mt-2 text-gray-300">Your ticket is pending confirmation. You can check status below.</p>
+          <p class="text-xs mt-2 text-gray-300">ඔබගේ මුදල් ගෙවීමෙ රිසිට් පත තහවුරු කර ගැනීමෙන් පසු ඔබ දිනිම් ඇදීම සදහා ඇතුලත් වේ.</p>
         </div>
       </div>
     </div>
 
     <!-- My Tickets Section -->
     <div class="mt-8 bg-gray-900 bg-opacity-80 p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h2 class="text-2xl font-semibold mb-4 text-center">🎫 My Tickets</h2>
+      <h2 class="text-2xl font-semibold mb-4 text-center">🎫 ඔබ පෙර ලබා දුන් දුරකථන අංකය ඇතුලත් කර ඔබ මිලදී ගත් ටිකට් පත් බලන්න</h2>
       <div class="mb-4">
         <input type="tel" id="check-phone" placeholder="📱 Enter your phone number" 
                class="w-full px-4 py-3 mb-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-white text-center text-lg font-mono focus:border-purple-400 focus:outline-none">
         <button id="load-tickets" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-bold shadow-lg">
-          🔍 Load My Tickets
+          ටිකට් පත් බලන්න
         </button>
       </div>
       <div id="user-tickets">
@@ -595,6 +829,39 @@
       <button class="whatsapp-btn" onclick="payViaWhatsApp()">
         💬 මුදල් ගෙවීම
       </button>
+    </div>
+  </div>
+
+  <!-- Phone Number Entry Popup -->
+  <div id="phone-popup" class="phone-popup-overlay">
+    <div class="phone-popup-content">
+      <button class="close-popup" onclick="closePhonePopup()">×</button>
+      <div class="cart-icon">🎫</div>
+      <h3 class="phone-popup-title">ඔබගේ ටිකට් පත වෙන්කර ගැනීම සාර්ථකයි.<br>මුදල් ගෙවීමෙන් පසු ඔබ දිනුම් ඇදීම සදහා ඇතුලත් වේ.</h3>
+      <p class="text-sm text-purple-300 mb-3">YOUR LUCKY NUMBERS</p>
+      
+      <div class="phone-popup-numbers" id="phone-popup-numbers">
+        <!-- Numbers will be inserted here -->
+      </div>
+      
+      <div class="text-left mb-4">
+        <label class="block text-sm font-medium mb-2" style="color: #ffffff;">ඔබගේ ජයග්‍රහණය පිළිබඳව දැනුවත් කිරීමට , ඔබව සම්බන්ධ කර ගැනීමට හැකි දුරකථන අංකයක් ඇතුළත් කරන්න.</label>
+        <input 
+          type="tel" 
+          id="phone-popup-input" 
+          class="phone-input-field" 
+          placeholder="0712345678"
+          maxlength="10"
+          pattern="[0-9]{10}"
+        >
+        <div id="phone-validation-message" class="phone-validation-message"></div>
+      </div>
+      
+      <div class="flex justify-center">
+        <button id="phone-confirm-btn" class="phone-confirm-btn" disabled style="width: 80%; margin: 0;">
+          💬 මුදල් ගෙවීම
+        </button>
+      </div>
     </div>
   </div>
 
@@ -663,32 +930,71 @@
       updateSelectionStatus();
     });
 
-    // Buy ticket
+    // Buy ticket - Show phone popup instead of inline form
     document.getElementById('buy-ticket').addEventListener('click', async () => {
       if (selectedNumbers.size !== 4) {
         document.getElementById('selection-error').classList.remove('hidden');
         return;
       }
       
-      // Hide error and show phone input section
+      // Hide error message
       document.getElementById('selection-error').classList.add('hidden');
       
-      // Create enhanced lottery number display
+      // Show phone popup with selected numbers
       const sortedNumbers = [...selectedNumbers].sort((a, b) => a - b);
-      const enhancedDisplay = document.getElementById('selected-numbers-display-enhanced');
-      enhancedDisplay.innerHTML = sortedNumbers.map(num => 
-        `<div class="lottery-number">${num}</div>`
+      const phonePopupNumbers = document.getElementById('phone-popup-numbers');
+      phonePopupNumbers.innerHTML = sortedNumbers.map(num => 
+        `<div class="phone-popup-number">${num}</div>`
       ).join('');
       
-      document.getElementById('phone-input-section').classList.remove('hidden');
+      // Clear phone input and reset validation
+      document.getElementById('phone-popup-input').value = '';
+      document.getElementById('phone-confirm-btn').disabled = true;
+      document.getElementById('phone-validation-message').textContent = '';
+      
+      // Show the popup
+      document.getElementById('phone-popup').classList.add('show');
     });
 
-    // Confirm ticket with phone number
-    document.getElementById('confirm-ticket').addEventListener('click', async () => {
-      const phoneNumber = document.getElementById('user-phone').value.trim();
+    // Phone number validation
+    const phoneInput = document.getElementById('phone-popup-input');
+    const confirmBtn = document.getElementById('phone-confirm-btn');
+    const validationMessage = document.getElementById('phone-validation-message');
+    
+    phoneInput.addEventListener('input', function() {
+      const phoneNumber = this.value.trim();
       
-      if (!phoneNumber) {
-        alert('Please enter your phone number');
+      // Remove any non-digit characters
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      this.value = cleanNumber;
+      
+      if (cleanNumber.length === 0) {
+        this.className = 'phone-input-field';
+        validationMessage.textContent = '';
+        confirmBtn.disabled = true;
+      } else if (cleanNumber.length < 10) {
+        this.className = 'phone-input-field invalid';
+        validationMessage.textContent = `Enter ${10 - cleanNumber.length} more digits`;
+        validationMessage.className = 'phone-validation-message invalid';
+        confirmBtn.disabled = true;
+      } else if (cleanNumber.length === 10) {
+        this.className = 'phone-input-field valid';
+        validationMessage.textContent = '✅ Valid phone number';
+        validationMessage.className = 'phone-validation-message valid';
+        confirmBtn.disabled = false;
+      } else {
+        this.className = 'phone-input-field invalid';
+        validationMessage.textContent = 'Phone number must be exactly 10 digits';
+        validationMessage.className = 'phone-validation-message invalid';
+        confirmBtn.disabled = true;
+      }
+    });
+    
+    // Phone popup confirm button
+    confirmBtn.addEventListener('click', async () => {
+      const phoneNumber = phoneInput.value.trim();
+      
+      if (phoneNumber.length !== 10) {
         return;
       }
       
@@ -705,12 +1011,18 @@
         const result = await response.json();
         
         if (response.ok) {
+          // Close phone popup
+          document.getElementById('phone-popup').classList.remove('show');
+          
           // Show purchase status
           document.getElementById('ticket-id').textContent = result.id;
           document.getElementById('ticket-numbers').textContent = result.numbers.join(', ');
           document.getElementById('ticket-phone').textContent = result.phone;
           document.getElementById('purchase-status').classList.remove('hidden');
-          document.getElementById('phone-input-section').classList.add('hidden');
+          
+          // Auto-fill and load existing tickets for this phone number
+          document.getElementById('check-phone').value = phoneNumber;
+          loadUserTickets(phoneNumber);
           
           // Show WhatsApp payment popup
           document.getElementById('popup-numbers').textContent = result.numbers.join(', ');
@@ -719,7 +1031,7 @@
           // Clear form
           selectedNumbers.clear();
           document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
-          document.getElementById('user-phone').value = '';
+          updateSelectionStatus();
         } else {
           alert('Error: ' + result.error);
         }
@@ -728,20 +1040,8 @@
       }
     });
 
-    // Cancel ticket
-    document.getElementById('cancel-ticket').addEventListener('click', () => {
-      document.getElementById('phone-input-section').classList.add('hidden');
-      document.getElementById('user-phone').value = '';
-    });
-
-    // Load user tickets
-    document.getElementById('load-tickets').addEventListener('click', async () => {
-      const phone = document.getElementById('check-phone').value.trim();
-      if (!phone) {
-        alert('Please enter your phone number');
-        return;
-      }
-      
+    // Function to load user tickets (extracted for reuse)
+    async function loadUserTickets(phone) {
       try {
         const response = await fetch(`/api/user-tickets/${phone}`);
         const tickets = await response.json();
@@ -808,18 +1108,18 @@
               
               ${ticket.status === 'confirmed' ? `
                 <div class="mt-3 p-2 bg-green-900 bg-opacity-30 border border-green-700 rounded-lg">
-                  <p class="text-xs text-green-300 font-semibold">🎉 CONGRATULATIONS!</p>
-                  <p class="text-xs text-green-200">Your ticket has been confirmed</p>
+                  <p class="text-xs text-green-300 font-semibold">🎉 සුභ පැතුම්!!!</p>
+                  <p class="text-xs text-green-200">ටිකට් පත මිලදී ගැනීම සාර්ථකයි</p>
                 </div>
               ` : ticket.status === 'rejected' ? `
                 <div class="mt-3 p-2 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg">
-                  <p class="text-xs text-red-300 font-semibold">❗ TICKET REJECTED</p>
-                  <p class="text-xs text-red-200">Please contact support if needed</p>
+                  <p class="text-xs text-red-300 font-semibold">❗ මිලදී ගැනීම අසාර්ථකයි</p>
+                  <p class="text-xs text-red-200">කරුනාකර නැවත් උත්සාහ කරන්න. ස්තුති !!</p>
                 </div>
               ` : `
                 <div class="mt-3 p-2 bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg">
-                  <p class="text-xs text-yellow-300 font-semibold">⏳ AWAITING CONFIRMATION</p>
-                  <p class="text-xs text-yellow-200">Please send payment receipt via WhatsApp</p>
+                  <p class="text-xs text-yellow-300 font-semibold">⏳ රිසිට් පත තහවුරු කරගනිමින්</p>
+                  <p class="text-xs text-yellow-200">මුදල් ගේවිමේ රිසිට් පත තහවුරු කරගැනිමට මද වේලවක් ගත වේ</p>
                 </div>
               `}
             </div>
@@ -828,6 +1128,69 @@
       } catch (error) {
         document.getElementById('user-tickets').innerHTML = '<p class="text-red-400 text-center">Error loading tickets</p>';
       }
+    }
+
+    // Confirm ticket with phone number (keeping existing function for compatibility)
+    document.getElementById('confirm-ticket').addEventListener('click', async () => {
+      const phoneNumber = document.getElementById('user-phone').value.trim();
+      
+      if (!phoneNumber) {
+        alert('Please enter your phone number');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('phone', phoneNumber);
+      formData.append('numbers', JSON.stringify([...selectedNumbers].sort((a, b) => a - b)));
+      
+      try {
+        const response = await fetch('/api/tickets', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          // Show purchase status
+          document.getElementById('ticket-id').textContent = result.id;
+          document.getElementById('ticket-numbers').textContent = result.numbers.join(', ');
+          document.getElementById('ticket-phone').textContent = result.phone;
+          document.getElementById('purchase-status').classList.remove('hidden');
+          document.getElementById('phone-input-section').classList.add('hidden');
+          
+          // Show WhatsApp payment popup
+          document.getElementById('popup-numbers').textContent = result.numbers.join(', ');
+          document.getElementById('payment-popup').classList.add('show');
+          
+          // Clear form
+          selectedNumbers.clear();
+          document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
+          document.getElementById('user-phone').value = '';
+        } else {
+          alert('Error: ' + result.error);
+        }
+      } catch (error) {
+        alert('Network error. Please try again.');
+      }
+    });
+
+    // Cancel ticket
+    document.getElementById('cancel-ticket').addEventListener('click', () => {
+      document.getElementById('phone-input-section').classList.add('hidden');
+      document.getElementById('user-phone').value = '';
+    });
+
+    // Load user tickets
+    document.getElementById('load-tickets').addEventListener('click', async () => {
+      const phone = document.getElementById('check-phone').value.trim();
+      if (!phone) {
+        alert('Please enter your phone number');
+        return;
+      }
+      
+      // Use the shared function
+      loadUserTickets(phone);
     });
 
     // Load latest winning numbers and auto-display
@@ -925,6 +1288,10 @@
     // WhatsApp popup functions
     function closePaymentPopup() {
       document.getElementById('payment-popup').classList.remove('show');
+    }
+    
+    function closePhonePopup() {
+      document.getElementById('phone-popup').classList.remove('show');
     }
 
     function payViaWhatsApp() {
