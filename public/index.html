@@ -819,19 +819,6 @@
     </div>
   </div>
 
-  <!-- WhatsApp Payment Popup -->
-  <div id="payment-popup" class="popup-overlay">
-    <div class="popup-content">
-      <button class="close-popup" onclick="closePaymentPopup()">×</button>
-      <div class="cart-icon">🛒</div>
-      <h3 class="text-xl font-bold mb-2">ඔබගේ ටිකට් පත වෙන්කර ගැනීම සාර්ථකයි.<br>මුදල් ගෙවීමෙන් පසු ඔබ දිනුම් ඇදීම සදහා ඇතුලත් වේ.</h3>
-      <p class="text-sm mb-4">Selected Numbers: <span id="popup-numbers" class="font-mono text-green-400"></span></p>
-      <button class="whatsapp-btn" onclick="payViaWhatsApp()">
-        💬 මුදල් ගෙවීම
-      </button>
-    </div>
-  </div>
-
   <!-- Phone Number Entry Popup -->
   <div id="phone-popup" class="phone-popup-overlay">
     <div class="phone-popup-content">
@@ -858,7 +845,7 @@
       </div>
       
       <div class="flex justify-center">
-        <button id="phone-confirm-btn" class="phone-confirm-btn" disabled style="width: 80%; margin: 0;">
+        <button id="phone-confirm-btn" class="phone-confirm-btn" disabled style="width: 80%; margin: 0;" onclick="payDirectly()">
           💬 මුදල් ගෙවීම
         </button>
       </div>
@@ -1024,10 +1011,6 @@
           document.getElementById('check-phone').value = phoneNumber;
           loadUserTickets(phoneNumber);
           
-          // Show WhatsApp payment popup
-          document.getElementById('popup-numbers').textContent = result.numbers.join(', ');
-          document.getElementById('payment-popup').classList.add('show');
-          
           // Clear form
           selectedNumbers.clear();
           document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
@@ -1114,7 +1097,7 @@
               ` : ticket.status === 'rejected' ? `
                 <div class="mt-3 p-2 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg">
                   <p class="text-xs text-red-300 font-semibold">❗ මිලදී ගැනීම අසාර්ථකයි</p>
-                  <p class="text-xs text-red-200">කරුනාකර නැවත් උත්සාහ කරන්න. ස්තුති !!</p>
+                  <p class="text-xs text-red-200">කරුනාකර නැවත උත්සාහ කරන්න. ස්තුති !!</p>
                 </div>
               ` : `
                 <div class="mt-3 p-2 bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg">
@@ -1158,10 +1141,6 @@
           document.getElementById('ticket-phone').textContent = result.phone;
           document.getElementById('purchase-status').classList.remove('hidden');
           document.getElementById('phone-input-section').classList.add('hidden');
-          
-          // Show WhatsApp payment popup
-          document.getElementById('popup-numbers').textContent = result.numbers.join(', ');
-          document.getElementById('payment-popup').classList.add('show');
           
           // Clear form
           selectedNumbers.clear();
@@ -1285,19 +1264,22 @@
     // Load winning numbers on page load
     loadWinningNumbers();
 
-    // WhatsApp popup functions
-    function closePaymentPopup() {
-      document.getElementById('payment-popup').classList.remove('show');
-    }
-    
+    // Phone popup functions
     function closePhonePopup() {
       document.getElementById('phone-popup').classList.remove('show');
     }
 
-    function payViaWhatsApp() {
-      // Open Facebook Messenger for payment
+    // Direct payment function
+    function payDirectly() {
+      const phoneNumber = document.getElementById('phone-popup-input').value.trim();
+      
+      if (phoneNumber.length !== 10) {
+        return;
+      }
+      
+      // Open Facebook Messenger for payment and close popup
       window.open('https://m.me/686240774580900?source=qr_link_share', '_blank');
-      closePaymentPopup();
+      closePhonePopup();
     }
   </script>
 </body>
